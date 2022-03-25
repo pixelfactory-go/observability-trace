@@ -2,23 +2,21 @@ package trace
 
 import (
 	"go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
 type Config struct {
-	SpanExporterEndpoint           string            `env:"OTEL_EXPORTER_OTLP_SPAN_ENDPOINT"`
-	SpanExporterEndpointInsecure   bool              `env:"OTEL_EXPORTER_OTLP_SPAN_INSECURE,default=false"`
-	ServiceName                    string            `env:"LS_SERVICE_NAME"`
-	ServiceVersion                 string            `env:"LS_SERVICE_VERSION,default=unknown"`
-	Headers                        map[string]string `env:"OTEL_EXPORTER_OTLP_HEADERS"`
-	MetricExporterEndpoint         string            `env:"OTEL_EXPORTER_OTLP_METRIC_ENDPOINT"`
-	MetricExporterEndpointInsecure bool              `env:"OTEL_EXPORTER_OTLP_METRIC_INSECURE,default=false"`
-	MetricsEnabled                 bool              `env:"LS_METRICS_ENABLED,default=true"`
-	LogLevel                       string            `env:"OTEL_LOG_LEVEL,default=info"`
-	Propagators                    []string          `env:"OTEL_PROPAGATORS,default=b3"`
-	MetricReportingPeriod          string            `env:"OTEL_EXPORTER_OTLP_METRIC_PERIOD,default=30s"`
-	ResourceAttributes             map[string]string
-	Resource                       *resource.Resource
-	Disabled                       bool
+	TraceEnabled                 bool              `env:"OTEL_TRACE_ENABLED,default=false"`
+	SpanExporterEndpoint         string            `env:"OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,default=http://localhost:4317"`
+	SpanExporterEndpointInsecure bool              `env:"OTEL_EXPORTER_OTLP_TRACES_INSECURE,default=false"`
+	ServiceName                  string            `env:"OTEL_SERVICE_NAME"`
+	ServiceVersion               string            `env:"OTEL_SERVICE_VERSION,default=unknown"`
+	Headers                      map[string]string `env:"OTEL_EXPORTER_OTLP_HEADERS"`
+	LogLevel                     string            `env:"OTEL_LOG_LEVEL,default=info"`
+	Propagators                  []string          `env:"OTEL_PROPAGATORS,default=b3"`
+	ResourceAttributes           map[string]string
+	Resource                     *resource.Resource
+	TraceExporter                sdktrace.SpanExporter
 }
 
 type Option func(*Config)
@@ -75,5 +73,13 @@ func WithHeaders(headers map[string]string) Option {
 func WithSpanExporterInsecure(insecure bool) Option {
 	return func(c *Config) {
 		c.SpanExporterEndpointInsecure = insecure
+	}
+}
+
+// WithTraceExporter permits connecting to the
+// trace endpoint without a certificate
+func WithTraceExporter(traceExporter sdktrace.SpanExporter) Option {
+	return func(c *Config) {
+		c.TraceExporter = traceExporter
 	}
 }
