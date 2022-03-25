@@ -1,4 +1,4 @@
-package pipelines
+package provider
 
 import (
 	"context"
@@ -10,33 +10,55 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
 	"go.opentelemetry.io/otel/sdk/trace"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/encoding/gzip"
 )
 
-func NewTracePipeline(c PipelineConfig) (func() error, error) {
-	spanExporter, err := newTraceExporter(c.Endpoint, c.Insecure, c.Headers)
+type Config struct {
+	Endpoint        string
+	Insecure        bool
+	Headers         map[string]string
+	Resource        *resource.Resource
+	TraceExporter   trace.SpanExporter
+	ReportingPeriod string
+	Propagators     []string
+}
+
+type ShutdownFunc func() error
+
+type ProviderSetupFunc func(Config) (ShutdownFunc, error)
+
+func InitProvider(c Config) (ShutdownFunc, error) {
+	ctx := context.Background()
+	var bsp trace.SpanProcessor
+
+	traceExporter, err := newTraceExporter(c.Endpoint, c.Insecure, c.Headers)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create span exporter: %v", err)
 	}
+	bsp = trace.NewBatchSpanProcessor(traceExporter)
 
-	bsp := trace.NewBatchSpanProcessor(spanExporter)
-	tp := trace.NewTracerProvider(
+	if c.TraceExporter != nil {
+		bsp = trace.NewBatchSpanProcessor(c.TraceExporter)
+	}
+
+	tracerProvider := trace.NewTracerProvider(
 		trace.WithSampler(trace.AlwaysSample()),
 		trace.WithSpanProcessor(bsp),
 		trace.WithResource(c.Resource),
 	)
 
-	if err = configurePropagators(c); err != nil {
+	if err := configurePropagators(c); err != nil {
 		return nil, err
 	}
 
-	otel.SetTracerProvider(tp)
+	otel.SetTracerProvider(tracerProvider)
 
 	return func() error {
-		_ = bsp.Shutdown(context.Background())
-		return spanExporter.Shutdown(context.Background())
+		// Shutdown will flush any remaining spans and shut down the exporter.
+		return tracerProvider.Shutdown(ctx)
 	}, nil
 }
 
@@ -57,7 +79,7 @@ func newTraceExporter(endpoint string, insecure bool, headers map[string]string)
 }
 
 // configurePropagators configures B3 propagation by default
-func configurePropagators(c PipelineConfig) error {
+func configurePropagators(c Config) error {
 	propagatorsMap := map[string]propagation.TextMapPropagator{
 		"b3":           b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader)),
 		"baggage":      propagation.Baggage{},

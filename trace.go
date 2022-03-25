@@ -8,12 +8,12 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
-	"go.pixelfactory.io/pkg/observability/trace/pipelines"
+	"go.pixelfactory.io/pkg/observability/trace/provider"
 )
 
 type Provider struct {
-	config        Config
-	shutdownFuncs []func() error
+	config       Config
+	ShutdownFunc provider.ShutdownFunc
 }
 
 func newConfig(opts ...Option) (Config, error) {
@@ -88,61 +88,47 @@ func newResource(c *Config) (*resource.Resource, error) {
 		resource.WithAttributes(attributes...),
 	)
 
-	// Note: There are new detectors we may wish to take advantage
-	// of, now available in the default SDK (e.g., WithProcess(),
-	// WithOSType(), ...).
 	return r, nil
 }
 
-type setupFunc func(Config) (func() error, error)
-
-func setupTracing(c Config) (func() error, error) {
-	// if c.SpanExporterEndpoint == "" {
-	// 	c.logger.Debugf("tracing is disabled by configuration: no endpoint set")
-	// 	return nil, nil
-	// }
-	return pipelines.NewTracePipeline(pipelines.PipelineConfig{
-		Endpoint:    c.SpanExporterEndpoint,
-		Insecure:    c.SpanExporterEndpointInsecure,
-		Headers:     c.Headers,
-		Resource:    c.Resource,
-		Propagators: c.Propagators,
+func setupTracing(c Config) (provider.ShutdownFunc, error) {
+	if !c.TraceEnabled {
+		return nil, nil
+	}
+	return provider.InitProvider(provider.Config{
+		Endpoint:      c.SpanExporterEndpoint,
+		Insecure:      c.SpanExporterEndpointInsecure,
+		Headers:       c.Headers,
+		Resource:      c.Resource,
+		Propagators:   c.Propagators,
+		TraceExporter: c.TraceExporter,
 	})
 }
 
-// New returns a new `Provider` type. It uses Jaeger exporter and globally sets
-// the tracer provider as well as the global tracer for spans.
-func NewProvider(opts ...Option) (Provider, error) {
+// New returns a new `Provider` type.
+func NewProvider(opts ...Option) (*Provider, error) {
 	c, err := newConfig(opts...)
 	if err != nil {
-		return Provider{}, nil
+		return nil, err
 	}
 
 	if c.Headers == nil {
 		c.Headers = map[string]string{}
 	}
 
-	p := Provider{
-		config: c,
+	shutdown, err := setupTracing(c)
+	if err != nil {
+		return nil, err
 	}
 
-	for _, setup := range []setupFunc{setupTracing} {
-		shutdown, err := setup(c)
-		if err != nil {
-			return p, err
-		}
-		if shutdown != nil {
-			p.shutdownFuncs = append(p.shutdownFuncs, shutdown)
-		}
+	p := &Provider{
+		config:       c,
+		ShutdownFunc: shutdown,
 	}
 
 	return p, nil
 }
 
-func (p Provider) Shutdown() {
-	for _, shutdown := range p.shutdownFuncs {
-		if err := shutdown(); err != nil {
-			panic(err)
-		}
-	}
+func (p Provider) Shutdown() error {
+	return p.ShutdownFunc()
 }

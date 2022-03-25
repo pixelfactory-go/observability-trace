@@ -1,14 +1,3 @@
-# Trace
-
-## Installation
-
-```bash
-go get go.pixelfactory.io/pkg/observability/trace
-```
-
-## Usage
-
-```golang
 package main
 
 import (
@@ -18,6 +7,7 @@ import (
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+
 	"go.pixelfactory.io/pkg/observability/trace"
 )
 
@@ -50,4 +40,3 @@ func main() {
 		panic(err)
 	}
 }
-```
