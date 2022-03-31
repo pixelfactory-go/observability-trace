@@ -21,6 +21,13 @@ type Config struct {
 
 type Option func(*Config)
 
+// WithTraceEnabled configures the endpoint for sending traces via OTLP
+func WithTraceEnabled(enabled bool) Option {
+	return func(c *Config) {
+		c.TraceEnabled = enabled
+	}
+}
+
 // WithSpanExporterEndpoint configures the endpoint for sending traces via OTLP
 func WithSpanExporterEndpoint(url string) Option {
 	return func(c *Config) {
