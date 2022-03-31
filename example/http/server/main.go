@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -10,8 +12,23 @@ import (
 
 type helloHandler struct{}
 
+func sayHello(ctx context.Context, name string) string {
+	span := trace.SpanFromContext(ctx)
+	span.SetName("sayHello")
+	defer span.End()
+
+	return fmt.Sprintf("Hello %s", name)
+}
+
 func (h helloHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello World"))
+	ctx := r.Context()
+
+	// Create the parent span.
+	ctx, span := trace.NewSpan(ctx, "helloHandler.ServeHTTP", nil)
+	defer span.End()
+
+	resp := sayHello(ctx, "Amine")
+	w.Write([]byte(resp))
 }
 
 func main() {
@@ -33,10 +50,10 @@ func main() {
 	defer prv.Shutdown()
 
 	h := helloHandler{}
-	otelth := trace.HTTPHandler(h, "helloHandler")
+	oh := trace.HTTPHandler(h, "helloHandler")
 
 	mux := http.NewServeMux()
-	mux.Handle("/hello", otelth)
+	mux.Handle("/hello", oh)
 
 	err = http.ListenAndServe(":7777", mux)
 	if err != nil {
