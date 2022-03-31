@@ -12,6 +12,7 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.6.0
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.6.0
 	go.opentelemetry.io/otel/sdk v1.6.0
+	go.opentelemetry.io/otel/trace v1.6.0
 	google.golang.org/grpc v1.45.0
 )
 
@@ -25,7 +26,6 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/internal/retry v1.6.0 // indirect
 	go.opentelemetry.io/otel/internal/metric v0.27.0 // indirect
 	go.opentelemetry.io/otel/metric v0.27.0 // indirect
-	go.opentelemetry.io/otel/trace v1.6.0 // indirect
 	go.opentelemetry.io/proto/otlp v0.12.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
