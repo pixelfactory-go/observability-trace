@@ -83,8 +83,7 @@ func WithSpanExporterInsecure(insecure bool) Option {
 	}
 }
 
-// WithTraceExporter permits connecting to the
-// trace endpoint without a certificate
+// WithTraceExporter configures trace exporter
 func WithTraceExporter(traceExporter sdktrace.SpanExporter) Option {
 	return func(c *Config) {
 		c.TraceExporter = traceExporter
