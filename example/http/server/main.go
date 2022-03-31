@@ -1,15 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
-
 	"go.pixelfactory.io/pkg/observability/trace"
 )
+
+type helloHandler struct{}
+
+func (h helloHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello World"))
+}
 
 func main() {
 	// console exporter.
@@ -20,22 +23,22 @@ func main() {
 
 	// trace provider
 	prv, err := trace.NewProvider(
+		trace.WithTraceEnabled(true),
 		trace.WithTraceExporter(exp),
+		trace.WithServiceName("server"),
 	)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	defer prv.Shutdown()
 
-	helloHandler := func(w http.ResponseWriter, req *http.Request) {
-		fmt.Fprintf(w, "Hello, world!\n")
-	}
+	h := helloHandler{}
+	otelth := trace.HTTPHandler(h, "helloHandler")
 
-	// wrap http handler
-	otelHandler := otelhttp.NewHandler(http.HandlerFunc(helloHandler), "Hello")
+	mux := http.NewServeMux()
+	mux.Handle("/hello", otelth)
 
-	http.Handle("/hello", otelHandler)
-	err = http.ListenAndServe(":7777", nil)
+	err = http.ListenAndServe(":7777", mux)
 	if err != nil {
 		panic(err)
 	}
