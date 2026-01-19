@@ -8,6 +8,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
+
 	"go.pixelfactory.io/pkg/observability/trace/provider"
 )
 
@@ -74,9 +75,8 @@ func newResource(c *Config) (*resource.Resource, error) {
 		hostname, err := os.Hostname()
 		if err != nil {
 			return nil, err
-		} else {
-			attributes = append(attributes, semconv.HostNameKey.String(hostname))
 		}
+		attributes = append(attributes, semconv.HostNameKey.String(hostname))
 	}
 
 	attributes = append(r.Attributes(), attributes...)
@@ -93,7 +93,7 @@ func newResource(c *Config) (*resource.Resource, error) {
 
 func setupTracing(c Config) (provider.ShutdownFunc, error) {
 	if !c.TraceEnabled {
-		return nil, nil
+		return func() error { return nil }, nil
 	}
 	return provider.InitProvider(provider.Config{
 		Endpoint:      c.SpanExporterEndpoint,
@@ -105,7 +105,7 @@ func setupTracing(c Config) (provider.ShutdownFunc, error) {
 	})
 }
 
-// New returns a new `Provider` type.
+// NewProvider returns a new `Provider` type.
 func NewProvider(opts ...Option) (*Provider, error) {
 	c, err := newConfig(opts...)
 	if err != nil {

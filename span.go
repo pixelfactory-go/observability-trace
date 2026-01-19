@@ -14,9 +14,11 @@ import (
 // span must be completed with `defer span.End()` right after the call.
 func NewSpan(ctx context.Context, name string, cus SpanCustomiser) (context.Context, trace.Span) {
 	if cus == nil {
+		//nolint:spancheck // Caller is responsible for calling span.End()
 		return otel.Tracer("").Start(ctx, name)
 	}
 
+	//nolint:spancheck // Caller is responsible for calling span.End()
 	return otel.Tracer("").Start(ctx, name, cus.customise()...)
 }
 
