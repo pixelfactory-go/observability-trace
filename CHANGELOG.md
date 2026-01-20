@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2-beta](https://github.com/pixelfactory-go/observability-trace/compare/v0.4.1-beta...v0.4.2-beta) (2026-01-20)
+
+
+### Bug Fixes
+
+* add missing goreleaser config ([96a1c23](https://github.com/pixelfactory-go/observability-trace/commit/96a1c237f6ac92ee63d2a1a061450819fc93309f))
+* add missing goreleaser config ([8cfb8c4](https://github.com/pixelfactory-go/observability-trace/commit/8cfb8c465add573a4c5123965ef92aab7e57c2d3))
+
 ## [0.4.1-beta](https://github.com/pixelfactory-go/observability-trace/compare/v0.4.0-beta...v0.4.1-beta) (2026-01-20)
 
 
