@@ -4,9 +4,35 @@ import (
 	"testing"
 
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 
 	"go.pixelfactory.io/pkg/observability/trace"
 )
+
+func createExporter(t *testing.T) tracesdk.SpanExporter {
+	t.Helper()
+	exp, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
+	if err != nil {
+		t.Fatalf("failed to create exporter: %v", err)
+	}
+	return exp
+}
+
+func testProviderSuccess(t *testing.T, provider *trace.Provider, err error) {
+	t.Helper()
+	if err != nil {
+		t.Fatalf("NewProvider failed: %v", err)
+	}
+
+	if provider == nil {
+		t.Fatal("expected provider, got nil")
+	}
+
+	// Cleanup
+	if shutdownErr := provider.Shutdown(); shutdownErr != nil {
+		t.Errorf("shutdown failed: %v", shutdownErr)
+	}
+}
 
 func TestNewProvider(t *testing.T) {
 	t.Parallel()
@@ -27,47 +53,27 @@ func TestNewProvider(t *testing.T) {
 		}
 
 		// Shutdown should work even with tracing disabled
-		if err := provider.Shutdown(); err != nil {
-			t.Errorf("shutdown failed: %v", err)
+		if shutdownErr := provider.Shutdown(); shutdownErr != nil {
+			t.Errorf("shutdown failed: %v", shutdownErr)
 		}
 	})
 
 	t.Run("create provider with tracing enabled", func(t *testing.T) {
 		t.Parallel()
 
-		exp, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
-		if err != nil {
-			t.Fatalf("failed to create exporter: %v", err)
-		}
-
 		provider, err := trace.NewProvider(
 			trace.WithTraceEnabled(true),
 			trace.WithServiceName("test-service"),
 			trace.WithServiceVersion("1.0.0"),
-			trace.WithTraceExporter(exp),
+			trace.WithTraceExporter(createExporter(t)),
 			trace.WithPropagators([]string{"b3"}),
 		)
-		if err != nil {
-			t.Fatalf("NewProvider failed: %v", err)
-		}
 
-		if provider == nil {
-			t.Fatal("expected provider, got nil")
-		}
-
-		// Cleanup
-		if err := provider.Shutdown(); err != nil {
-			t.Errorf("shutdown failed: %v", err)
-		}
+		testProviderSuccess(t, provider, err)
 	})
 
 	t.Run("create provider with all options", func(t *testing.T) {
 		t.Parallel()
-
-		exp, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
-		if err != nil {
-			t.Fatalf("failed to create exporter: %v", err)
-		}
 
 		provider, err := trace.NewProvider(
 			trace.WithTraceEnabled(true),
@@ -75,7 +81,7 @@ func TestNewProvider(t *testing.T) {
 			trace.WithServiceVersion("2.0.0"),
 			trace.WithSpanExporterEndpoint("localhost:4317"),
 			trace.WithSpanExporterInsecure(true),
-			trace.WithTraceExporter(exp),
+			trace.WithTraceExporter(createExporter(t)),
 			trace.WithPropagators([]string{"b3", "tracecontext", "baggage"}),
 			trace.WithHeaders(map[string]string{"api-key": "secret"}),
 			trace.WithResourceAttributes(map[string]string{
@@ -83,32 +89,17 @@ func TestNewProvider(t *testing.T) {
 				"region":      "us-east-1",
 			}),
 		)
-		if err != nil {
-			t.Fatalf("NewProvider failed: %v", err)
-		}
 
-		if provider == nil {
-			t.Fatal("expected provider, got nil")
-		}
-
-		// Cleanup
-		if err := provider.Shutdown(); err != nil {
-			t.Errorf("shutdown failed: %v", err)
-		}
+		testProviderSuccess(t, provider, err)
 	})
 
 	t.Run("create provider with invalid propagators", func(t *testing.T) {
 		t.Parallel()
 
-		exp, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
-		if err != nil {
-			t.Fatalf("failed to create exporter: %v", err)
-		}
-
-		_, err = trace.NewProvider(
+		_, err := trace.NewProvider(
 			trace.WithTraceEnabled(true),
 			trace.WithServiceName("test-service"),
-			trace.WithTraceExporter(exp),
+			trace.WithTraceExporter(createExporter(t)),
 			trace.WithPropagators([]string{"invalid-propagator"}),
 		)
 
@@ -120,15 +111,10 @@ func TestNewProvider(t *testing.T) {
 	t.Run("provider shutdown can be called multiple times", func(t *testing.T) {
 		t.Parallel()
 
-		exp, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
-		if err != nil {
-			t.Fatalf("failed to create exporter: %v", err)
-		}
-
 		provider, err := trace.NewProvider(
 			trace.WithTraceEnabled(true),
 			trace.WithServiceName("test-service"),
-			trace.WithTraceExporter(exp),
+			trace.WithTraceExporter(createExporter(t)),
 			trace.WithPropagators([]string{"b3"}),
 		)
 		if err != nil {
@@ -136,12 +122,12 @@ func TestNewProvider(t *testing.T) {
 		}
 
 		// Call shutdown multiple times
-		if err := provider.Shutdown(); err != nil {
-			t.Errorf("first shutdown failed: %v", err)
+		if shutdownErr := provider.Shutdown(); shutdownErr != nil {
+			t.Errorf("first shutdown failed: %v", shutdownErr)
 		}
 
-		if err := provider.Shutdown(); err != nil {
-			t.Errorf("second shutdown failed: %v", err)
+		if shutdownErr := provider.Shutdown(); shutdownErr != nil {
+			t.Errorf("second shutdown failed: %v", shutdownErr)
 		}
 	})
 }
@@ -166,47 +152,22 @@ func TestProviderWithCustomExporter(t *testing.T) {
 			trace.WithTraceExporter(exp),
 			trace.WithPropagators([]string{"b3"}),
 		)
-		if err != nil {
-			t.Fatalf("NewProvider failed: %v", err)
-		}
 
-		if provider == nil {
-			t.Fatal("expected provider, got nil")
-		}
-
-		// Cleanup
-		if err := provider.Shutdown(); err != nil {
-			t.Errorf("shutdown failed: %v", err)
-		}
+		testProviderSuccess(t, provider, err)
 	})
 }
 
 func TestProviderHeadersMerge(t *testing.T) {
 	t.Parallel()
 
-	exp, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
-	if err != nil {
-		t.Fatalf("failed to create exporter: %v", err)
-	}
-
 	provider, err := trace.NewProvider(
 		trace.WithTraceEnabled(true),
 		trace.WithServiceName("headers-service"),
-		trace.WithTraceExporter(exp),
+		trace.WithTraceExporter(createExporter(t)),
 		trace.WithPropagators([]string{"b3"}),
 		trace.WithHeaders(map[string]string{"header1": "value1"}),
 		trace.WithHeaders(map[string]string{"header2": "value2"}),
 	)
-	if err != nil {
-		t.Fatalf("NewProvider failed: %v", err)
-	}
 
-	if provider == nil {
-		t.Fatal("expected provider, got nil")
-	}
-
-	// Cleanup
-	if err := provider.Shutdown(); err != nil {
-		t.Errorf("shutdown failed: %v", err)
-	}
+	testProviderSuccess(t, provider, err)
 }

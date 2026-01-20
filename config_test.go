@@ -291,7 +291,11 @@ func TestWithSpanExporterInsecure(t *testing.T) {
 			opt(&cfg)
 
 			if cfg.SpanExporterEndpointInsecure != tt.insecure {
-				t.Errorf("expected SpanExporterEndpointInsecure=%v, got %v", tt.insecure, cfg.SpanExporterEndpointInsecure)
+				t.Errorf(
+					"expected SpanExporterEndpointInsecure=%v, got %v",
+					tt.insecure,
+					cfg.SpanExporterEndpointInsecure,
+				)
 			}
 		})
 	}

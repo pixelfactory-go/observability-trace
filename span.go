@@ -19,7 +19,7 @@ func NewSpan(ctx context.Context, name string, cus SpanCustomiser) (context.Cont
 	}
 
 	//nolint:spancheck // Caller is responsible for calling span.End()
-	return otel.Tracer("").Start(ctx, name, cus.customise()...)
+	return otel.Tracer("").Start(ctx, name, cus.Customise()...)
 }
 
 // SpanFromContext returns the current span from a context. If you wish to avoid
@@ -79,5 +79,5 @@ func FailSpan(span trace.Span, msg string) {
 // SpanCustomiser is used to enforce custom span options. Any custom concrete
 // span customiser type must implement this interface.
 type SpanCustomiser interface {
-	customise() []trace.SpanStartOption
+	Customise() []trace.SpanStartOption
 }

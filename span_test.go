@@ -1,4 +1,4 @@
-package trace
+package trace_test
 
 import (
 	"context"
@@ -10,6 +10,8 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 	oteltrace "go.opentelemetry.io/otel/trace"
+
+	"go.pixelfactory.io/pkg/observability/trace"
 )
 
 func setupTestTracer() (*tracetest.SpanRecorder, func()) {
@@ -30,13 +32,14 @@ func TestNewSpan(t *testing.T) {
 	t.Parallel()
 
 	t.Run("create span without customizer", func(t *testing.T) {
+		t.Parallel()
 		sr, cleanup := setupTestTracer()
 		defer cleanup()
 
 		ctx := context.Background()
 		spanName := "test-span"
 
-		newCtx, span := NewSpan(ctx, spanName, nil)
+		newCtx, span := trace.NewSpan(ctx, spanName, nil)
 		span.End()
 
 		if newCtx == ctx {
@@ -54,6 +57,7 @@ func TestNewSpan(t *testing.T) {
 	})
 
 	t.Run("create span with customizer", func(t *testing.T) {
+		t.Parallel()
 		sr, cleanup := setupTestTracer()
 		defer cleanup()
 
@@ -64,7 +68,7 @@ func TestNewSpan(t *testing.T) {
 			kind: oteltrace.SpanKindClient,
 		}
 
-		newCtx, span := NewSpan(ctx, spanName, customizer)
+		newCtx, span := trace.NewSpan(ctx, spanName, customizer)
 		span.End()
 
 		if newCtx == ctx {
@@ -93,10 +97,10 @@ func TestSpanFromContext(t *testing.T) {
 	defer cleanup()
 
 	ctx := context.Background()
-	ctx, originalSpan := NewSpan(ctx, "parent-span", nil)
+	ctx, originalSpan := trace.NewSpan(ctx, "parent-span", nil)
 	defer originalSpan.End()
 
-	retrievedSpan := SpanFromContext(ctx)
+	retrievedSpan := trace.SpanFromContext(ctx)
 
 	if retrievedSpan.SpanContext().SpanID() != originalSpan.SpanContext().SpanID() {
 		t.Error("retrieved span does not match original span")
@@ -110,7 +114,7 @@ func TestAddSpanTags(t *testing.T) {
 	defer cleanup()
 
 	ctx := context.Background()
-	_, span := NewSpan(ctx, "test-span", nil)
+	_, span := trace.NewSpan(ctx, "test-span", nil)
 
 	tags := map[string]string{
 		"user.id": "12345",
@@ -118,7 +122,7 @@ func TestAddSpanTags(t *testing.T) {
 		"region":  "us-east-1",
 	}
 
-	AddSpanTags(span, tags)
+	trace.AddSpanTags(span, tags)
 	span.End()
 
 	spans := sr.Ended()
@@ -152,7 +156,7 @@ func TestAddSpanEvents(t *testing.T) {
 	defer cleanup()
 
 	ctx := context.Background()
-	_, span := NewSpan(ctx, "test-span", nil)
+	_, span := trace.NewSpan(ctx, "test-span", nil)
 
 	eventName := "processing-started"
 	events := map[string]string{
@@ -160,7 +164,7 @@ func TestAddSpanEvents(t *testing.T) {
 		"step":      "initialization",
 	}
 
-	AddSpanEvents(span, eventName, events)
+	trace.AddSpanEvents(span, eventName, events)
 	span.End()
 
 	spans := sr.Ended()
@@ -189,10 +193,10 @@ func TestAddSpanError(t *testing.T) {
 	defer cleanup()
 
 	ctx := context.Background()
-	_, span := NewSpan(ctx, "test-span", nil)
+	_, span := trace.NewSpan(ctx, "test-span", nil)
 
 	testErr := errors.New("test error")
-	AddSpanError(span, testErr)
+	trace.AddSpanError(span, testErr)
 	span.End()
 
 	spans := sr.Ended()
@@ -217,10 +221,10 @@ func TestFailSpan(t *testing.T) {
 	defer cleanup()
 
 	ctx := context.Background()
-	_, span := NewSpan(ctx, "test-span", nil)
+	_, span := trace.NewSpan(ctx, "test-span", nil)
 
 	errorMessage := "operation failed"
-	FailSpan(span, errorMessage)
+	trace.FailSpan(span, errorMessage)
 	span.End()
 
 	spans := sr.Ended()
@@ -243,7 +247,7 @@ type testSpanCustomiser struct {
 	kind oteltrace.SpanKind
 }
 
-func (t *testSpanCustomiser) customise() []oteltrace.SpanStartOption {
+func (t *testSpanCustomiser) Customise() []oteltrace.SpanStartOption {
 	return []oteltrace.SpanStartOption{
 		oteltrace.WithSpanKind(t.kind),
 	}
