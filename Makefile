@@ -22,7 +22,11 @@ lint:
 
 test:
 	@echo "Running tests..."
+ifeq ($(OS),Windows_NT)
 	@go test -v -race ./...
+else
+	@go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
+endif
 	@echo "Done!"
 
 test-coverage:
