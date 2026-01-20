@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+
 	"go.pixelfactory.io/pkg/observability/trace"
 )
 
@@ -28,7 +30,9 @@ func (h helloHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer span.End()
 
 	resp := sayHello(ctx, "Amine")
-	w.Write([]byte(resp))
+	if _, err := w.Write([]byte(resp)); err != nil {
+		log.Printf("Failed to write response: %v", err)
+	}
 }
 
 func main() {
@@ -47,7 +51,11 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	defer prv.Shutdown()
+	defer func() {
+		if shutdownErr := prv.Shutdown(); shutdownErr != nil {
+			log.Printf("Failed to shutdown provider: %v", shutdownErr)
+		}
+	}()
 
 	h := helloHandler{}
 	oh := trace.HTTPHandler(h, "helloHandler")
@@ -55,7 +63,20 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/hello", oh)
 
-	err = http.ListenAndServe(":7777", mux)
+	const (
+		readTimeout  = 5 * time.Second
+		writeTimeout = 10 * time.Second
+		idleTimeout  = 15 * time.Second
+	)
+	srv := &http.Server{
+		Addr:         ":7777",
+		Handler:      mux,
+		ReadTimeout:  readTimeout,
+		WriteTimeout: writeTimeout,
+		IdleTimeout:  idleTimeout,
+	}
+
+	err = srv.ListenAndServe()
 	if err != nil {
 		panic(err)
 	}

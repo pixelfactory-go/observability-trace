@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"go.opentelemetry.io/contrib/propagators/b3"
@@ -28,7 +29,7 @@ type Config struct {
 
 type ShutdownFunc func() error
 
-type ProviderSetupFunc func(Config) (ShutdownFunc, error)
+type SetupFunc func(Config) (ShutdownFunc, error)
 
 func InitProvider(c Config) (ShutdownFunc, error) {
 	ctx := context.Background()
@@ -36,7 +37,7 @@ func InitProvider(c Config) (ShutdownFunc, error) {
 
 	traceExporter, err := newTraceExporter(c.Endpoint, c.Insecure, c.Headers)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create span exporter: %v", err)
+		return nil, fmt.Errorf("failed to create span exporter: %w", err)
 	}
 	bsp = trace.NewBatchSpanProcessor(traceExporter)
 
@@ -50,8 +51,8 @@ func InitProvider(c Config) (ShutdownFunc, error) {
 		trace.WithResource(c.Resource),
 	)
 
-	if err := configurePropagators(c); err != nil {
-		return nil, err
+	if cfgErr := configurePropagators(c); cfgErr != nil {
+		return nil, cfgErr
 	}
 
 	otel.SetTracerProvider(tracerProvider)
@@ -78,7 +79,7 @@ func newTraceExporter(endpoint string, insecure bool, headers map[string]string)
 	)
 }
 
-// configurePropagators configures B3 propagation by default
+// configurePropagators configures B3 propagation by default.
 func configurePropagators(c Config) error {
 	propagatorsMap := map[string]propagation.TextMapPropagator{
 		"b3":           b3.New(b3.WithInjectEncoding(b3.B3MultipleHeader)),
@@ -94,7 +95,9 @@ func configurePropagators(c Config) error {
 		}
 	}
 	if len(props) == 0 {
-		return fmt.Errorf("invalid configuration: unsupported propagators. Supported options: b3,baggage,tracecontext,ottrace")
+		return errors.New(
+			"invalid configuration: unsupported propagators. Supported options: b3,baggage,tracecontext,ottrace",
+		)
 	}
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
 		props...,

@@ -21,49 +21,49 @@ type Config struct {
 
 type Option func(*Config)
 
-// WithTraceEnabled configures the endpoint for sending traces via OTLP
+// WithTraceEnabled configures the endpoint for sending traces via OTLP.
 func WithTraceEnabled(enabled bool) Option {
 	return func(c *Config) {
 		c.TraceEnabled = enabled
 	}
 }
 
-// WithSpanExporterEndpoint configures the endpoint for sending traces via OTLP
+// WithSpanExporterEndpoint configures the endpoint for sending traces via OTLP.
 func WithSpanExporterEndpoint(url string) Option {
 	return func(c *Config) {
 		c.SpanExporterEndpoint = url
 	}
 }
 
-// WithServiceName configures a "service.name" resource label
+// WithServiceName configures a "service.name" resource label.
 func WithServiceName(name string) Option {
 	return func(c *Config) {
 		c.ServiceName = name
 	}
 }
 
-// WithServiceVersion configures a "service.version" resource label
+// WithServiceVersion configures a "service.version" resource label.
 func WithServiceVersion(version string) Option {
 	return func(c *Config) {
 		c.ServiceVersion = version
 	}
 }
 
-// WithResourceAttributes configures attributes on the resource
+// WithResourceAttributes configures attributes on the resource.
 func WithResourceAttributes(attributes map[string]string) Option {
 	return func(c *Config) {
 		c.ResourceAttributes = attributes
 	}
 }
 
-// WithPropagators configures propagators
+// WithPropagators configures propagators.
 func WithPropagators(propagators []string) Option {
 	return func(c *Config) {
 		c.Propagators = propagators
 	}
 }
 
-// WithHeaders configures OTLP/gRPC connection headers
+// WithHeaders configures OTLP/gRPC connection headers.
 func WithHeaders(headers map[string]string) Option {
 	return func(c *Config) {
 		if c.Headers == nil {
@@ -76,14 +76,14 @@ func WithHeaders(headers map[string]string) Option {
 }
 
 // WithSpanExporterInsecure permits connecting to the
-// trace endpoint without a certificate
+// trace endpoint without a certificate.
 func WithSpanExporterInsecure(insecure bool) Option {
 	return func(c *Config) {
 		c.SpanExporterEndpointInsecure = insecure
 	}
 }
 
-// WithTraceExporter configures trace exporter
+// WithTraceExporter configures trace exporter.
 func WithTraceExporter(traceExporter sdktrace.SpanExporter) Option {
 	return func(c *Config) {
 		c.TraceExporter = traceExporter
