@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1-beta](https://github.com/pixelfactory-go/observability-trace/compare/v0.4.0-beta...v0.4.1-beta) (2026-01-20)
+
+
+### Bug Fixes
+
+* resolve all linter errors and fix Windows CI ([1ae9191](https://github.com/pixelfactory-go/observability-trace/commit/1ae9191f6c1151965dea9e81dda3e9dc0362f528))
+
 ## [Unreleased]
 
 ### Added
