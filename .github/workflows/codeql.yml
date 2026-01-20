@@ -2,11 +2,10 @@ name: "CodeQL"
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "master"]
   pull_request:
-    branches: ["main"]
   schedule:
-    - cron: '0 0 * * 1'  # Weekly on Mondays
+    - cron: "0 0 * * 1" # Run every Monday at midnight
 
 permissions:
   contents: read
@@ -20,29 +19,29 @@ jobs:
       security-events: write
       actions: read
 
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ['go']
-
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        with:
+          egress-policy: audit
+
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
         with:
-          go-version-file: 'go.mod'
+          go-version-file: "go.mod"
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@db2c8fe24a75c0f28f87ed1a6fe918a5ccf7b1e6 # v4.31.10
+        uses: github/codeql-action/init@cdefb33c0f6224e58673d9004f47f7cb3e328b89 # v4.31.10
         with:
-          languages: ${{ matrix.language }}
+          languages: go
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@db2c8fe24a75c0f28f87ed1a6fe918a5ccf7b1e6 # v4.31.10
+        uses: github/codeql-action/autobuild@cdefb33c0f6224e58673d9004f47f7cb3e328b89 # v4.31.10
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@db2c8fe24a75c0f28f87ed1a6fe918a5ccf7b1e6 # v4.31.10
+        uses: github/codeql-action/analyze@cdefb33c0f6224e58673d9004f47f7cb3e328b89 # v4.31.10
         with:
-          category: "/language:${{matrix.language}}"
+          category: "/language:go"
