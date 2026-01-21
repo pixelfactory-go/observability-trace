@@ -1,4 +1,4 @@
-.PHONY: help fmt lint test test-coverage build clean
+.PHONY: help fmt lint test test-coverage build clean fuzz
 
 # Default target
 help:
@@ -7,6 +7,7 @@ help:
 	@echo "  make lint           - Run golangci-lint"
 	@echo "  make test           - Run tests"
 	@echo "  make test-coverage  - Run tests with coverage"
+	@echo "  make fuzz           - Run all fuzz tests (or specific test with FUZZ_TEST=FuzzName)"
 	@echo "  make build          - Build the project"
 	@echo "  make clean          - Clean build artifacts"
 
@@ -45,3 +46,17 @@ clean:
 	@rm -f coverage.out
 	@go clean ./...
 	@echo "Done!"
+
+fuzz:
+ifdef FUZZ_TEST
+	@echo "Running fuzz test: $(FUZZ_TEST)..."
+	@go test -run=^$$ -fuzz=$(FUZZ_TEST) -fuzztime=30s .
+	@echo "Done!"
+else
+	@echo "Running all fuzz tests..."
+	@for test in $$(grep -h '^func Fuzz' *_test.go | sed 's/func \(Fuzz[^(]*\).*/\1/'); do \
+		echo "Running $$test..."; \
+		go test -run=^$$ -fuzz=$$test -fuzztime=30s . || exit 1; \
+	done
+	@echo "Done!"
+endif
