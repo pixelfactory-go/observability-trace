@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0-beta](https://github.com/pixelfactory-go/observability-trace/compare/v0.4.2-beta...v0.5.0-beta) (2026-01-21)
+
+
+### Features
+
+* add SAST workflows (CodeQL and Scorecard) ([b9ae8e2](https://github.com/pixelfactory-go/observability-trace/commit/b9ae8e2e5473da74cf4e7b7ca98f97cb3d2c3648))
+* add security policy and enhance dependency updates ([13770db](https://github.com/pixelfactory-go/observability-trace/commit/13770db86c35644c45fad02e96da1c3d399c4455))
+* enhance CI with security improvements and govulncheck ([5bfd9d7](https://github.com/pixelfactory-go/observability-trace/commit/5bfd9d71a13fca52be0cef7574302e7cc33f422a))
+* update CI and workflows for improved security and dependency management ([3f00c9e](https://github.com/pixelfactory-go/observability-trace/commit/3f00c9e81ddb67438de377f3bbcaaba52e668027))
+
+
+### Bug Fixes
+
+* add names to CI jobs for clarity ([bb821f5](https://github.com/pixelfactory-go/observability-trace/commit/bb821f5f5a42fcda4f626269e88fd90c901dc9fd))
+* add names to CI jobs for clarity ([c0d01be](https://github.com/pixelfactory-go/observability-trace/commit/c0d01be09415e4b4c66be9f81e75d9d726276059))
+
 ## [0.4.2-beta](https://github.com/pixelfactory-go/observability-trace/compare/v0.4.1-beta...v0.4.2-beta) (2026-01-20)
 
 
