@@ -1,13 +1,15 @@
-package trace
+package trace_test
 
 import (
 	"context"
 	"testing"
 
 	"go.opentelemetry.io/otel/trace/noop"
+
+	trace "go.pixelfactory.io/pkg/observability/trace"
 )
 
-// FuzzAddSpanTags tests the AddSpanTags function with arbitrary string inputs
+// FuzzAddSpanTags tests the AddSpanTags function with arbitrary string inputs.
 func FuzzAddSpanTags(f *testing.F) {
 	f.Add("key1", "value1")
 	f.Add("", "")
@@ -16,6 +18,7 @@ func FuzzAddSpanTags(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, key, value string) {
 		_, span := noop.NewTracerProvider().Tracer("test").Start(context.Background(), "test")
+		defer span.End()
 		defer func() {
 			if r := recover(); r != nil {
 				t.Errorf("AddSpanTags panicked with key=%q, value=%q: %v", key, value, r)
@@ -23,19 +26,20 @@ func FuzzAddSpanTags(f *testing.F) {
 		}()
 
 		tags := map[string]string{key: value}
-		AddSpanTags(span, tags)
+		trace.AddSpanTags(span, tags)
 	})
 }
 
-// FuzzAddSpanEvents tests the AddSpanEvents function with arbitrary string inputs
+// FuzzAddSpanEvents tests the AddSpanEvents function with arbitrary string inputs.
 func FuzzAddSpanEvents(f *testing.F) {
 	f.Add("event1", "key1", "value1")
 	f.Add("", "", "")
 	f.Add("cache.hit", "cache.key", "user:123")
-	f.Add("database.query", "query", "SELECT * FROM users")
+	f.Add("database.query", "query", "SELECT id, name FROM users")
 
 	f.Fuzz(func(t *testing.T, name, key, value string) {
 		_, span := noop.NewTracerProvider().Tracer("test").Start(context.Background(), "test")
+		defer span.End()
 		defer func() {
 			if r := recover(); r != nil {
 				t.Errorf("AddSpanEvents panicked with name=%q, key=%q, value=%q: %v", name, key, value, r)
@@ -43,11 +47,11 @@ func FuzzAddSpanEvents(f *testing.F) {
 		}()
 
 		events := map[string]string{key: value}
-		AddSpanEvents(span, name, events)
+		trace.AddSpanEvents(span, name, events)
 	})
 }
 
-// FuzzFailSpan tests the FailSpan function with arbitrary message strings
+// FuzzFailSpan tests the FailSpan function with arbitrary message strings.
 func FuzzFailSpan(f *testing.F) {
 	f.Add("error occurred")
 	f.Add("")
@@ -56,17 +60,18 @@ func FuzzFailSpan(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, msg string) {
 		_, span := noop.NewTracerProvider().Tracer("test").Start(context.Background(), "test")
+		defer span.End()
 		defer func() {
 			if r := recover(); r != nil {
 				t.Errorf("FailSpan panicked with msg=%q: %v", msg, r)
 			}
 		}()
 
-		FailSpan(span, msg)
+		trace.FailSpan(span, msg)
 	})
 }
 
-// FuzzNewSpan tests the NewSpan function with arbitrary span names
+// FuzzNewSpan tests the NewSpan function with arbitrary span names.
 func FuzzNewSpan(f *testing.F) {
 	f.Add("operation")
 	f.Add("")
@@ -80,7 +85,7 @@ func FuzzNewSpan(f *testing.F) {
 			}
 		}()
 
-		ctx, span := NewSpan(context.Background(), name, nil)
+		ctx, span := trace.NewSpan(context.Background(), name, nil)
 		if ctx == nil {
 			t.Error("NewSpan returned nil context")
 		}
@@ -91,7 +96,7 @@ func FuzzNewSpan(f *testing.F) {
 	})
 }
 
-// FuzzWithServiceName tests the WithServiceName option with arbitrary service names
+// FuzzWithServiceName tests the WithServiceName option with arbitrary service names.
 func FuzzWithServiceName(f *testing.F) {
 	f.Add("my-service")
 	f.Add("")
@@ -105,8 +110,8 @@ func FuzzWithServiceName(f *testing.F) {
 			}
 		}()
 
-		var c Config
-		opt := WithServiceName(name)
+		var c trace.Config
+		opt := trace.WithServiceName(name)
 		opt(&c)
 
 		if c.ServiceName != name {
@@ -115,7 +120,7 @@ func FuzzWithServiceName(f *testing.F) {
 	})
 }
 
-// FuzzWithServiceVersion tests the WithServiceVersion option with arbitrary versions
+// FuzzWithServiceVersion tests the WithServiceVersion option with arbitrary versions.
 func FuzzWithServiceVersion(f *testing.F) {
 	f.Add("1.0.0")
 	f.Add("")
@@ -129,8 +134,8 @@ func FuzzWithServiceVersion(f *testing.F) {
 			}
 		}()
 
-		var c Config
-		opt := WithServiceVersion(version)
+		var c trace.Config
+		opt := trace.WithServiceVersion(version)
 		opt(&c)
 
 		if c.ServiceVersion != version {
@@ -139,7 +144,7 @@ func FuzzWithServiceVersion(f *testing.F) {
 	})
 }
 
-// FuzzWithSpanExporterEndpoint tests the WithSpanExporterEndpoint option with arbitrary URLs
+// FuzzWithSpanExporterEndpoint tests the WithSpanExporterEndpoint option with arbitrary URLs.
 func FuzzWithSpanExporterEndpoint(f *testing.F) {
 	f.Add("http://localhost:4317")
 	f.Add("")
@@ -153,8 +158,8 @@ func FuzzWithSpanExporterEndpoint(f *testing.F) {
 			}
 		}()
 
-		var c Config
-		opt := WithSpanExporterEndpoint(url)
+		var c trace.Config
+		opt := trace.WithSpanExporterEndpoint(url)
 		opt(&c)
 
 		if c.SpanExporterEndpoint != url {
@@ -162,4 +167,3 @@ func FuzzWithSpanExporterEndpoint(f *testing.F) {
 		}
 	})
 }
-
