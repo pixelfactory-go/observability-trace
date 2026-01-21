@@ -1,4 +1,4 @@
-.PHONY: help fmt lint test test-coverage build clean
+.PHONY: help fmt lint test test-coverage build clean fuzz fuzz-single
 
 # Default target
 help:
@@ -7,6 +7,8 @@ help:
 	@echo "  make lint           - Run golangci-lint"
 	@echo "  make test           - Run tests"
 	@echo "  make test-coverage  - Run tests with coverage"
+	@echo "  make fuzz           - Run all fuzz tests"
+	@echo "  make fuzz-single    - Run single fuzz test (usage: make fuzz-single FUZZ_TEST=FuzzName:package)"
 	@echo "  make build          - Build the project"
 	@echo "  make clean          - Clean build artifacts"
 
@@ -44,4 +46,24 @@ clean:
 	@echo "Cleaning build artifacts..."
 	@rm -f coverage.out
 	@go clean ./...
+	@echo "Done!"
+
+fuzz:
+	@echo "Running fuzz tests..."
+	@go test -fuzz=FuzzAddSpanTags -fuzztime=30s .
+	@go test -fuzz=FuzzAddSpanEvents -fuzztime=30s .
+	@go test -fuzz=FuzzFailSpan -fuzztime=30s .
+	@go test -fuzz=FuzzNewSpan -fuzztime=30s .
+	@go test -fuzz=FuzzWithServiceName -fuzztime=30s .
+	@go test -fuzz=FuzzWithServiceVersion -fuzztime=30s .
+	@go test -fuzz=FuzzWithSpanExporterEndpoint -fuzztime=30s .
+	@echo "Done!"
+
+fuzz-single:
+	@echo "Running single fuzz test: $(FUZZ_TEST)..."
+	@FUZZ_PARTS=$$(echo $(FUZZ_TEST) | tr ':' ' '); \
+	set -- $$FUZZ_PARTS; \
+	FUZZ_NAME=$$1; \
+	FUZZ_PKG=$${2:-.}; \
+	go test -fuzz=$$FUZZ_NAME -fuzztime=30s $$FUZZ_PKG
 	@echo "Done!"
