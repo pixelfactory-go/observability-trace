@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0-beta](https://github.com/pixelfactory-go/observability-trace/compare/v0.5.0-beta...v0.6.0-beta) (2026-01-21)
+
+
+### Features
+
+* add discover-fuzz-tests job and enhance fuzz target in Makefile ([ab2ee60](https://github.com/pixelfactory-go/observability-trace/commit/ab2ee6000ca805c5f3963bd302f3d6da596bef3c))
+* add fuzzing support to improve OpenSSF Scorecard rating ([bcf18b4](https://github.com/pixelfactory-go/observability-trace/commit/bcf18b4b9b44f807a1fa9923f9fed0cc78d30461))
+
+
+### Bug Fixes
+
+* enhance fuzz tests with proper function calls and comments ([3ded34a](https://github.com/pixelfactory-go/observability-trace/commit/3ded34a7399b06670fe3473bf66535ec93551d7e))
+
 ## [0.5.0-beta](https://github.com/pixelfactory-go/observability-trace/compare/v0.4.2-beta...v0.5.0-beta) (2026-01-21)
 
 
