@@ -1,0 +1,156 @@
+From 30d25fcfc46bc57a2366a586fd2088a66283a830 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Thu, 22 Jan 2026 18:20:19 +0000
+Subject: [PATCH] Enhance SECURITY.md with comprehensive security policy
+
+- Update SECURITY.md to match observability-log template
+- Add structured reporting methods with GitHub Security Advisories and email contact
+- Define what constitutes a vulnerability with version-specific examples
+- Include detailed vulnerability report requirements
+- Add coordinated vulnerability disclosure process with timeline
+- Define disclosure process and expectations for researchers
+- Document security update process
+- Clarify policy scope and exclusions
+- Add Contact section for security inquiries
+
+Based on security policy template from observability-log repository.
+---
+ SECURITY.md | 100 +++++++++++++++++++++++++++++++++++++---------------
+ 1 file changed, 72 insertions(+), 28 deletions(-)
+
+diff --git a/SECURITY.md b/SECURITY.md
+index c849502..85d80f5 100644
+--- a/SECURITY.md
++++ b/SECURITY.md
+@@ -2,7 +2,7 @@
+ 
+ ## Supported Versions
+ 
+-We actively support the latest stable version of this library.
++We provide security updates for the following versions:
+ 
+ | Version | Supported          |
+ | ------- | ------------------ |
+@@ -11,48 +11,92 @@ We actively support the latest stable version of this library.
+ 
+ ## Reporting a Vulnerability
+ 
+-If you discover a security vulnerability in this project, please report it responsibly:
++We take security vulnerabilities seriously and appreciate your efforts to responsibly disclose your findings. To report a vulnerability, please use one of the following secure methods:
+ 
+ **Please DO NOT open a public GitHub issue for security vulnerabilities.**
+ 
+-### How to Report
++### Reporting Methods
+ 
+-1. **GitHub Security Advisories** (Preferred): Use the [GitHub Security Advisory](https://github.com/pixelfactory-go/version/security/advisories/new) feature to privately report the vulnerability.
++1. **GitHub Security Advisories** (Preferred): Use the [Security Advisory](https://github.com/pixelfactory-go/version/security/advisories/new) feature to privately report vulnerabilities
++2. **Email**: Send details to security@pixelfactory.io with "[SECURITY]" in the subject line
+ 
+-2. **Email**: If you prefer email, please contact the maintainers through the repository contact information.
++### What Constitutes a Vulnerability
+ 
+-### What to Include
++A vulnerability is a weakness in the software that could be exploited to:
++- Execute arbitrary code or commands
++- Bypass authentication or authorization mechanisms
++- Access sensitive data or credentials
++- Cause denial of service or system crashes
++- Inject malicious content through version strings
++- Compromise the integrity of version information
+ 
+-When reporting a vulnerability, please include:
++### What to Include in Your Report
+ 
+-- A description of the vulnerability
+-- Steps to reproduce the issue
+-- Potential impact
+-- Any suggested fixes (if available)
++When reporting a vulnerability, please provide:
++- Description of the vulnerability and its potential impact
++- Detailed steps to reproduce the issue
++- Affected versions
++- Any proof-of-concept code or screenshots
++- Potential impact assessment
++- Suggested fixes or mitigations (if available)
+ 
+-### Response Timeline
++## Coordinated Vulnerability Disclosure
+ 
+-- We will acknowledge receipt of your vulnerability report within 48 hours
+-- We will provide an initial assessment within 5 business days
+-- We will work on a fix and keep you informed of our progress
+-- Once a fix is available, we will coordinate disclosure timing with you
++We follow coordinated vulnerability disclosure practices to ensure vulnerabilities are handled responsibly:
+ 
+-## Security Best Practices
++### Our Disclosure Timeline
+ 
+-When using this library:
++1. **Acknowledgment**: We will acknowledge receipt of your vulnerability report within 48 hours
++2. **Initial Assessment**: We will provide an initial assessment and severity rating within 5 business days
++3. **Disclosure Coordination**: We request a disclosure embargo of at least 90 days from the initial report to allow time for:
++   - Thorough investigation and validation
++   - Development and testing of fixes
++   - Preparation of security patches and advisories
++   - Coordination with downstream users and distributors
++4. **Public Disclosure**: After the fix is released, we will publicly disclose the vulnerability within 7 days, or coordinate disclosure timing with the reporter
+ 
+-- Always use the latest stable version
+-- Review release notes and changelogs for security updates
+-- Follow semantic versioning practices in your build process
+-- Validate version strings before displaying them to users
++### Disclosure Process
++
++- We will work with you to understand and validate the vulnerability
++- We will keep you informed of our progress throughout the remediation process
++- We will credit you in the security advisory (unless you prefer to remain anonymous)
++- If a vulnerability is already publicly known or being actively exploited, we may expedite the disclosure timeline to 30 days or less
++
++### Expectations
++
++- **Confidentiality**: Please do not disclose the vulnerability publicly until we have released a fix and agreed upon a disclosure date
++- **Good Faith**: We expect security researchers to act in good faith and avoid actions that could harm users, such as accessing unnecessary data, degrading service, or destroying data
++- **No Legal Action**: We will not pursue legal action against researchers who discover and report vulnerabilities in accordance with this policy
+ 
+ ## Security Update Process
+ 
+-Security fixes will be:
++When a vulnerability is confirmed:
++
++1. We will develop and test a security patch
++2. We will release the patch in a new version
++3. We will publish a security advisory with:
++   - Description of the vulnerability
++   - Affected versions
++   - Fixed versions
++   - Workarounds (if available)
++   - Credit to the reporter
++4. We will notify users through GitHub security advisories and release notes
++
++## Scope
++
++This security policy applies to:
++- The version library and all its components
++- Official documentation and examples
++- Build and release infrastructure
++
++Out of scope:
++- Issues in third-party dependencies (please report to the respective projects)
++- Vulnerabilities in applications using this library (unless the root cause is in the library itself)
++
++## Contact
+ 
+-1. Developed in a private branch
+-2. Released as soon as possible after validation
+-3. Announced through GitHub Security Advisories
+-4. Documented in the CHANGELOG
++For security-related questions or concerns:
++- **Security Email**: security@pixelfactory.io
++- **GitHub**: https://github.com/pixelfactory-go/version/security/advisories
+ 
+-Thank you for helping keep this project secure!
++Thank you for helping keep this project and its users secure!
+-- 
+2.43.0
+
