@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1-beta](https://github.com/pixelfactory-go/observability-trace/compare/v0.6.0-beta...v0.6.1-beta) (2026-01-30)
+
+
+### Bug Fixes
+
+* [StepSecurity] Apply security best practices ([a7605e5](https://github.com/pixelfactory-go/observability-trace/commit/a7605e55ba4b9040472b0c44274139e54f6fe250))
+
 ## [0.6.0-beta](https://github.com/pixelfactory-go/observability-trace/compare/v0.5.0-beta...v0.6.0-beta) (2026-01-21)
 
 
